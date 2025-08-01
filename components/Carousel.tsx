@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Button } from './ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Play from './icons/Play';
+import Popover from './Popover';
 
 export interface Movie {
   Id: string
@@ -111,9 +112,17 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies, label, ItemWidth,
                     )}
                     {/* Hover overlay with play button */}
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="bg-black/70 border-white rounded-full p-3 shadow-lg">
-                        <Play width={32} height={32} color='white'/>
-                      </div>
+                      {label !== 'Next Up' && label !== 'Continue Watching' ? (
+                        <Popover mediaId={movie.Id}>
+                          <div className="bg-black/70 border-white rounded-full p-3 shadow-lg">
+                            <Play width={32} height={32} color='white'/>
+                          </div>
+                        </Popover>
+                      ) : (
+                        <div className="bg-black/70 border-white rounded-full p-3 shadow-lg">
+                          <Play width={32} height={32} color='white'/>
+                        </div>
+                      )}
                     </div>
                   </div>
                   {/* Progress bar for continue watching - positioned below image */}
@@ -194,9 +203,17 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies, label, ItemWidth,
                   )}
                   {/* Hover overlay with play button */}
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="bg-black/70 border-white rounded-full p-3 shadow-lg">
-                        <Play width={32} height={32} color='white'/>
-                      </div>
+                      {label !== 'Next Up' && label !== 'Continue Watching' ? (
+                        <Popover mediaId={movie.Id}>
+                          <div className="bg-black/70 border-white rounded-full p-3 shadow-lg">
+                            <Play width={32} height={32} color='white'/>
+                          </div>
+                        </Popover>
+                      ) : (
+                        <div className="bg-black/70 border-white rounded-full p-3 shadow-lg">
+                          <Play width={32} height={32} color='white'/>
+                        </div>
+                      )}
                     </div>
                   {/* Progress bar for continue watching */}
                   {showProgress && movie.ContinueFrom && movie.DurationTicks && (

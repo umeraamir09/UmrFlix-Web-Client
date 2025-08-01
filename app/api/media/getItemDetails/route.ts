@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     }
 
     const jellyfinUrl = process.env.JELLYFIN_URL || process.env.JELLYFIN_SRVR_URL || 'https://watch.umroo.art';
-    const url = `${jellyfinUrl}/Items/${itemId}`;
+    const url = `${jellyfinUrl}/Items/${itemId}?Fields=ProviderIds,ExternalUrls`;
     
     const res = await fetch(url, {
       method: 'GET',
@@ -43,13 +43,19 @@ export async function GET(req: Request) {
       Overview: jellyfinData.Overview,
       Duration: formatRuntimeTicks(jellyfinData.RunTimeTicks || 0),
       ImageUrl: createJellyfinImageUrl(jellyfinData.Id, 'Primary', auth.jellyfinToken),
-      BackdropUrl: createJellyfinImageUrl(jellyfinData.Id, 'Backdrop', auth.jellyfinToken),
-      LogoUrl: createJellyfinImageUrl(jellyfinData.Id, 'Logo', auth.jellyfinToken),
+      BackdropUrl: (jellyfinData.BackdropImageTags && jellyfinData.BackdropImageTags.length > 0)
+        ? createJellyfinImageUrl(jellyfinData.Id, 'Backdrop', auth.jellyfinToken, jellyfinData.BackdropImageTags[0])
+        : null,
+      LogoUrl: (jellyfinData.ImageTags && jellyfinData.ImageTags.Logo)
+        ? createJellyfinImageUrl(jellyfinData.Id, 'Logo', auth.jellyfinToken, jellyfinData.ImageTags.Logo)
+        : null,
       Genres: jellyfinData.Genres || [],
       Studios: jellyfinData.Studios || [],
       People: jellyfinData.People || [],
       CommunityRating: jellyfinData.CommunityRating,
       CriticRating: jellyfinData.CriticRating,
+      ImdbRating: jellyfinData.CommunityRating || null,
+      ImdbId: jellyfinData.ProviderIds?.Imdb || null,
       Taglines: jellyfinData.Taglines || [],
       RunTimeTicks: jellyfinData.RunTimeTicks
     };
