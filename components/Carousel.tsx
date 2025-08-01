@@ -3,12 +3,16 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import Play from './icons/Play';
 
 export interface Movie {
   Id: string
   Name: string
   Type: "Movie" | "Series"
   ImageUrl: string
+  ContinueFrom?: number
+  DurationTicks?: number
+  Duration?: string
 }
 
 interface MovieCarouselProps {
@@ -18,9 +22,10 @@ interface MovieCarouselProps {
   ItemWidth?: number;
   ItemHeight?: number;
   wide?: boolean;
+  showProgress?: boolean;
 }
 
-const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies, label, ItemWidth, ItemHeight, wide }) => {
+const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies, label, ItemWidth, ItemHeight, wide, showProgress }) => {
   // Embla carousel setup with dragFree to allow smooth touch dragging
   const [emblaRef, emblaApi] = useEmblaCarousel({ dragFree: true, containScroll: 'trimSnaps' });
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -87,16 +92,41 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies, label, ItemWidth,
                 key={movie.Id || `movie-wide-${index}`}
                 className="flex-shrink-0 snap-start w-[75%] xs:w-[40%] sm:w-[45%] md:w-[35%] lg:w-[28%] xl:w-[24%] 2xl:w-[20%] select-none"
             >
-                <div className="relative w-full aspect-[16/9] overflow-hidden pointer-events-none rounded">
-                <Image
-                    src={movie.ImageUrl}
-                    alt={movie.Name}
-                    width={ItemWidth || 400}
-                    height={ItemHeight || 225}
-                    className="object-cover object-center w-full"
-                    draggable={false}
-                    style={{ userSelect: 'none', pointerEvents: 'none' }}
-                />
+                <div className="w-full">
+                  <div className="relative w-full aspect-[16/9] overflow-hidden pointer-events-auto rounded group cursor-pointer">
+                    <Image
+                      src={movie.ImageUrl}
+                      alt={movie.Name}
+                      width={ItemWidth || 400}
+                      height={ItemHeight || 225}
+                      className="object-cover object-center w-full transition-transform duration-300 group-hover:scale-105"
+                      draggable={false}
+                      style={{ userSelect: 'none', pointerEvents: 'none' }}
+                    />
+                    {/* Duration display on hover */}
+                    {movie.Duration && (
+                      <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {movie.Duration}
+                      </div>
+                    )}
+                    {/* Hover overlay with play button */}
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="bg-black/70 border-white rounded-full p-3 shadow-lg">
+                        <Play width={32} height={32} color='white'/>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Progress bar for continue watching - positioned below image */}
+                  {showProgress && movie.ContinueFrom && movie.DurationTicks && (
+                    <div className='flex justify-center'>
+                    <div className="w-[75%] h-[2px] bg-gray-600 mt-2 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-ux-primary transition-all duration-300 rounded-full"
+                        style={{ width: `${Math.min((movie.ContinueFrom / movie.DurationTicks) * 100, 100)}%` }}
+                      />
+                    </div>
+                    </div>
+                  )}
                 </div>
             </div>
             ))}
@@ -146,16 +176,37 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies, label, ItemWidth,
                 key={movie.Id || `movie-${index}`}
                 className="flex-shrink-0 snap-start w-[38%] xs:w-[32%] sm:w-[23%] md:w-[18%] lg:w-[15%] select-none"
             >
-                <div className="relative w-full aspect-[2/3] overflow-hidden pointer-events-none">
-                <Image
+                <div className="relative w-full aspect-[2/3] overflow-hidden pointer-events-auto rounded-lg group cursor-pointer">
+                  <Image
                     src={movie.ImageUrl}
                     alt={movie.Name}
                     width={ItemWidth || 200}
-                    height={ItemHeight || 100}
-                    className="object-cover w-full h-full rounded-lg"
+                    height={ItemHeight || 300}
+                    className="object-cover w-full h-full rounded-lg transition-transform duration-300 group-hover:scale-105"
                     draggable={false}
                     style={{ userSelect: 'none', pointerEvents: 'none' }}
-                />
+                  />
+                  {/* Duration display on hover */}
+                  {movie.Duration && (
+                    <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      {movie.Duration}
+                    </div>
+                  )}
+                  {/* Hover overlay with play button */}
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="bg-black/70 border-white rounded-full p-3 shadow-lg">
+                        <Play width={32} height={32} color='white'/>
+                      </div>
+                    </div>
+                  {/* Progress bar for continue watching */}
+                  {showProgress && movie.ContinueFrom && movie.DurationTicks && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                      <div
+                        className="h-full bg-red-500 transition-all duration-300"
+                        style={{ width: `${Math.min((movie.ContinueFrom / movie.DurationTicks) * 100, 100)}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
             </div>
             ))}

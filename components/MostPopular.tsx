@@ -85,7 +85,7 @@ const MostPopular = () => {
         {/* Buttons */}
         <div className="md:hidden">
           <Button className="bg-white text-black rounded-md text-sm md:text-base font-semibold w-full hover:bg-gray-200 transition mb-2">
-            <Play fill='#00000' /> Play
+            <Play /> Play
           </Button>
           <Button className="bg-gray-600/70 text-white w-full rounded-md text-sm md:text-base font-semibold hover:bg-gray-500 transition">
            <Info />  More Info
@@ -93,7 +93,7 @@ const MostPopular = () => {
         </div>
         <div className="md:flex gap-4 hidden ">
           <Button className="bg-white w-30 text-black rounded-md text-sm md:text-base font-semibold hover:bg-gray-200 transition">
-            <Play fill='#00000' /> Play
+            <Play /> Play
           </Button>
           <Button className="bg-gray-600/70 text-white w-30 rounded-md text-sm md:text-base font-semibold hover:bg-gray-500 transition">
            <Info />  More Info

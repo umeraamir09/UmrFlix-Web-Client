@@ -14,6 +14,9 @@ import { useEffect, useState } from 'react'
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import ArrowDown from './icons/ArrowDown'
+import RefreshButton from "./RefreshButton"
+import { handleRefresh } from '@/lib/handleRefresh';
+import { Separator } from "./ui/separator"
 
 
 interface Props {
@@ -108,7 +111,8 @@ const Header = ({ page, token, userId }: Props) => {
                 </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="z-[60] bg-black text-white border-gray-800">
-            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleRefresh}>Refresh Media</DropdownMenuItem>
+            <DropdownMenuItem className="bg-ux-secondary" onClick={handleLogout}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 

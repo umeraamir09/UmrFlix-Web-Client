@@ -11,6 +11,9 @@ type MediaItem = {
   Name: string;
   Type: 'Movie' | 'Series';
   ImageUrl: string;
+  ContinueFrom?: number;
+  DurationTicks?: number;
+  Duration?: string;
 };
 
 export default function TvSection({ style }: Props) {
@@ -96,7 +99,7 @@ export default function TvSection({ style }: Props) {
   return (
     <section className={`px-2 text-white py-4${style ? ` ${style}` : ''}`}>
       <div className='w-full mx-auto'>
-        <Carousel movies={media} label='Continue Watching' wide={true} />
+        <Carousel movies={media} label='Continue Watching' wide={true} showProgress={true} />
       </div>
     </section>
   );

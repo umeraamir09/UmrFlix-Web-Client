@@ -16,7 +16,8 @@ body {
 }
 
 @theme inline {
-  --color-ux-primary: 
+  --color-ux-primary: #F50723;
+  --color-ux-secondary: #C11119;  
 }
 
 @theme inline {
