@@ -1,0 +1,11 @@
+import React from 'react';
+
+const CircleError = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg{...props} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fillRule="evenodd" clipRule="evenodd" d="M11.5912 12L9.04558 9.45442L9.61127 8.88873L12.1569 11.4343L14.7024 8.88873L15.2681 9.45442L12.7225 12L15.2681 14.5456L14.7024 15.1113L12.1569 12.5657L9.61127 15.1113L9.04558 14.5456L11.5912 12Z" fill="#EB3942"/>
+<circle cx="12" cy="12" r="7.5" stroke="#EB3942"/>
+</svg>
+
+);
+
+export default CircleError;
