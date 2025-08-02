@@ -17,13 +17,15 @@ interface VideoPlayerProps {
   title?: string;
   poster?: string;
   maxDuration?: number; // Duration in seconds from Jellyfin RuntimeTicks
+  startTime?: number; // Starting position in seconds
 }
 
 export const NetflixVideoPlayer: React.FC<VideoPlayerProps> = ({ 
   src, 
   title = "Video Title",
   poster,
-  maxDuration 
+  maxDuration,
+  startTime = 0
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -65,7 +67,6 @@ export const NetflixVideoPlayer: React.FC<VideoPlayerProps> = ({
         const hls = new Hls({
           debug: false,
           enableWorker: true,
-        //   lowBufferWatchdogPeriod: 0.5,
           highBufferWatchdogPeriod: 3,
           nudgeOffset: 0.1,
           nudgeMaxRetry: 3,
@@ -73,9 +74,8 @@ export const NetflixVideoPlayer: React.FC<VideoPlayerProps> = ({
           maxMaxBufferLength: 600,
           startLevel: -1,
           autoStartLoad: true,
-          startPosition: -1,
+          startPosition: 0, // Default to start from the beginning
           defaultAudioCodec: undefined,
-        //   debug: false,
           capLevelOnFPSDrop: false,
           capLevelToPlayerSize: false,
           ignoreDevicePixelRatio: false,
@@ -86,6 +86,12 @@ export const NetflixVideoPlayer: React.FC<VideoPlayerProps> = ({
           console.log('HLS manifest parsed successfully');
           setIsBuffering(false);
           setVideoError(null); // Clear any previous errors
+
+          // Start from the specified start time
+          if (videoRef.current && startTime > 0) {
+            videoRef.current.currentTime = startTime;
+            console.log(`Starting playback from ${startTime} seconds`);
+          }
         });
         
         hls.on(Hls.Events.ERROR, (event, data) => {
@@ -150,6 +156,14 @@ export const NetflixVideoPlayer: React.FC<VideoPlayerProps> = ({
         console.log('Using native HLS support');
         setIsHlsSupported(true);
         video.src = src;
+        
+        // Set start time for Safari native HLS
+        if (startTime > 0) {
+          video.addEventListener('loadedmetadata', () => {
+            video.currentTime = startTime;
+            console.log(`Starting Safari HLS playback from ${startTime} seconds`);
+          }, { once: true });
+        }
       } else {
         console.error('HLS is not supported in this browser.');
         setIsHlsSupported(false);

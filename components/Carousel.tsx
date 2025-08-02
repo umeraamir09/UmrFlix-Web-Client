@@ -120,9 +120,9 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies, label, ItemWidth,
                           </div>
                         </Popover>
                       ) : (
-                        <div className="bg-black/70 border-white rounded-full p-3 shadow-lg">
+                        <a href={`/watch/${movie.Id}`} className="bg-black/70 border-white rounded-full p-3 shadow-lg block">
                           <Play width={32} height={32} color='white'/>
-                        </div>
+                        </a>
                       )}
                     </div>
                   </div>
@@ -211,9 +211,9 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies, label, ItemWidth,
                           </div>
                         </Popover>
                       ) : (
-                        <div className="bg-black/70 border-white rounded-full p-3 shadow-lg">
+                        <a href={`/watch/${movie.Id}`} className="bg-black/70 border-white rounded-full p-3 shadow-lg block">
                           <Play width={32} height={32} color='white'/>
-                        </div>
+                        </a>
                       )}
                     </div>
                   {/* Progress bar for continue watching */}

@@ -72,6 +72,7 @@ const WatchPageClient: React.FC<WatchPageClientProps> = ({ itemId, serverUrl }) 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [maxDuration, setMaxDuration] = useState<number>(0);
+  const [startTime, setStartTime] = useState<number>(0);
 
   // Helper function to convert ticks to seconds
   const ticksToSeconds = (ticks: number): number => {
@@ -130,6 +131,27 @@ const WatchPageClient: React.FC<WatchPageClientProps> = ({ itemId, serverUrl }) 
 
     getAuth()
   }, [])
+
+  // Fetch continue watching position
+  const fetchContinueWatchingPosition = async (): Promise<number> => {
+    try {
+      const response = await fetch('/api/media/getContinueWatching', {
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const currentItem = data.items?.find((item: any) => item.Id === itemId);
+        if (currentItem?.ContinueFrom) {
+          // Convert ticks to seconds
+          return Math.floor(currentItem.ContinueFrom / 10000000);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch continue watching position:', error);
+    }
+    return 0;
+  };
 
   // Fetch item details
   const fetchItemDetails = async (): Promise<ItemDetails | null> => {
@@ -341,6 +363,10 @@ const WatchPageClient: React.FC<WatchPageClientProps> = ({ itemId, serverUrl }) 
           throw new Error('Please log in to continue');
         }
 
+        // Fetch continue watching position first
+        const continueFromSeconds = await fetchContinueWatchingPosition();
+        setStartTime(continueFromSeconds);
+
         // Fetch both item details and playback info concurrently
         const [itemDetailsResponse, playbackInfoResponse] = await Promise.all([
           fetchItemDetails(),
@@ -439,6 +465,7 @@ const WatchPageClient: React.FC<WatchPageClientProps> = ({ itemId, serverUrl }) 
           title={itemDetails.Name}
           poster={posterUrl}
           maxDuration={maxDuration} // Pass max duration to prevent weird behavior
+          startTime={startTime} // Start from continue watching position
         />
       </div>
     );
