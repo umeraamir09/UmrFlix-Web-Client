@@ -9,44 +9,68 @@ interface Props {
 type MediaItem = {
   Id: string;
   Name: string;
-  Type: 'Movie' | 'Series';
+  Type: 'Movie' | 'Series' | 'Episode';
   ImageUrl: string;
+  SeriesName?: string;
+  SeasonName?: string;
+  IndexNumber?: number;
+  ParentIndexNumber?: number;
+  ContinueFrom?: number;
+  DurationTicks?: number;
+  Duration?: string;
 };
 
 export default function NextUpSection({ style }: Props) {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [continueWatching, setContinueWatching] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const fetchMedia = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // Create an AbortController for timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        // First, fetch continue watching items
+        const continueRes = await fetch('/api/media/getContinueWatching', { credentials: 'include' });
+        let continueWatchingIds = new Set<string>();
         
-        const res = await fetch('/api/media/getNextUp', { 
+        if (continueRes.ok) {
+          const continueData = await continueRes.json();
+          const ids = continueData.items.map((item: MediaItem) => item.Id);
+          continueWatchingIds = new Set(ids);
+          setContinueWatching(continueWatchingIds);
+        }
+        
+        // Then fetch next up items
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        const nextUpRes = await fetch('/api/media/getNextUp', { 
           credentials: 'include',
           signal: controller.signal
         });
         
         clearTimeout(timeoutId);
         
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+        if (!nextUpRes.ok) {
+          throw new Error(`HTTP error! status: ${nextUpRes.status}`);
         }
         
-        const data = await res.json();
-        setMedia(data.items || []);
+        const nextUpData = await nextUpRes.json();
+        // Filter out items that are already in continue watching
+        const filteredItems = (nextUpData.items || []).filter((item: MediaItem) => 
+          !continueWatchingIds.has(item.Id)
+        );
+        setMedia(filteredItems);
+        
       } catch (error) {
         if (error instanceof Error) {
           if (error.name === 'AbortError') {
             setError('Request timed out. Please try again.');
           } else {
-            setError(`Failed to load continue watching: ${error.message}`);
+            setError(`Failed to load next up: ${error.message}`);
           }
         } else {
           setError('An unknown error occurred');
@@ -57,7 +81,7 @@ export default function NextUpSection({ style }: Props) {
       }
     };
 
-    fetchMedia();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -87,7 +111,7 @@ export default function NextUpSection({ style }: Props) {
       <section className={`px-2 text-white py-4${style ? ` ${style}` : ''}`}>
         <div className='w-full mx-auto'>
           <h1 className='text-3xl mb-5'>Next Up</h1>
-          <div className='text-center py-8 text-gray-400'>No items to continue watching</div>
+          <div className='text-center py-8 text-gray-400'>No new episodes or items available</div>
         </div>
       </section>
     );

@@ -10,11 +10,15 @@ import Popover from './Popover';
 export interface Movie {
   Id: string
   Name: string
-  Type: "Movie" | "Series"
+  Type: "Movie" | "Series" | "Episode"
   ImageUrl: string
   ContinueFrom?: number
   DurationTicks?: number
   Duration?: string
+  SeriesName?: string
+  SeasonName?: string
+  IndexNumber?: number
+  ParentIndexNumber?: number
 }
 
 interface MovieCarouselProps {
@@ -126,7 +130,6 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies, label, ItemWidth,
                       )}
                     </div>
                   </div>
-                  {/* Progress bar for continue watching - positioned below image */}
                   {showProgress && movie.ContinueFrom && movie.DurationTicks && (
                     <div className='flex justify-center'>
                     <div className="w-[75%] h-[2px] bg-gray-600 mt-2 rounded-full overflow-hidden">
@@ -137,6 +140,20 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies, label, ItemWidth,
                     </div>
                     </div>
                   )}
+                  {/* Season and Episode information or Movie name */}
+                  <div className="mt-2 text-white text-sm">
+                    {movie.Type === 'Episode' ? (
+                      <div className="text-center">
+                        <div className="text-gray-300 text-xs">Season {movie.ParentIndexNumber} Ep: {movie.IndexNumber}</div>
+                      </div>
+                    ) : movie.Type === 'Movie' ? (
+                      <div className="text-center">
+                        <div className="text-gray-300 text-xs">{movie.Name}</div>
+                      </div>
+                    ) : null}
+                  </div>
+                  {/* Progress bar for continue watching - positioned below image */}
+
                 </div>
             </div>
             ))}

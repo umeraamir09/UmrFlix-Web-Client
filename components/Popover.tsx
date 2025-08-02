@@ -45,6 +45,8 @@ interface Episode {
   ImageUrl: string;
   SeriesId: string;
   SeasonId: string;
+  ContinueFrom?: number;
+  DurationTicks?: number;
 }
 
 interface PopoverProps {
@@ -57,6 +59,7 @@ const Popover: React.FC<PopoverProps> = ({ mediaId, children }) => {
   const [mediaDetails, setMediaDetails] = useState<MediaItem | null>(null);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [episodes, setEpisodes] = useState<Record<string, Episode[]>>({});
+  const [continueWatchingData, setContinueWatchingData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -67,11 +70,21 @@ const Popover: React.FC<PopoverProps> = ({ mediaId, children }) => {
   useEffect(() => {
     if (isOpen && mediaId) {
       setLoading(true);
-      // Fetch media details
-      fetch(`/api/media/getItemDetails?itemId=${mediaId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setMediaDetails(data.item);
+      // Fetch media details and continue watching data concurrently
+      Promise.all([
+        fetch(`/api/media/getItemDetails?itemId=${mediaId}`).then(res => res.json()),
+        fetch('/api/media/getContinueWatching', { credentials: 'include' }).then(res => res.json()).catch(() => ({ items: [] }))
+      ])
+        .then(([itemData, continueData]) => {
+          setMediaDetails(itemData.item);
+          // Create a lookup map for continue watching data
+          const continueMap: Record<string, any> = {};
+          if (continueData.items) {
+            continueData.items.forEach((item: any) => {
+              continueMap[item.Id] = item;
+            });
+          }
+          setContinueWatchingData(continueMap);
           setLoading(false);
         })
         .catch(() => setLoading(false));
@@ -92,12 +105,22 @@ const Popover: React.FC<PopoverProps> = ({ mediaId, children }) => {
       // Fetch episodes for the particular season
       fetch(`/api/media/getEpisodes?seasonId=${seasonId}`)
         .then((res) => res.json())
-        .then((data) =>
+        .then((data) => {
+          // Merge episode data with continue watching information
+          const episodesWithProgress = (data.episodes || []).map((episode: Episode) => {
+            const continueData = continueWatchingData[episode.Id];
+            return {
+              ...episode,
+              ContinueFrom: continueData?.ContinueFrom || 0,
+              DurationTicks: continueData?.DurationTicks || episode.RunTimeTicks,
+            };
+          });
+          
           setEpisodes((prevEpisodes) => ({
             ...prevEpisodes,
-            [seasonId]: data.episodes || [],
-          }))
-        );
+            [seasonId]: episodesWithProgress,
+          }));
+        });
     }
   };
 
@@ -285,6 +308,15 @@ const Popover: React.FC<PopoverProps> = ({ mediaId, children }) => {
                                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity">
                                     <Play width={16} height={16} color='white' />
                                   </div>
+                                  {/* Progress bar for continue watching */}
+                                  {episode.ContinueFrom && episode.ContinueFrom > 0 && episode.DurationTicks && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                                      <div
+                                        className="h-full bg-red-500 transition-all duration-300"
+                                        style={{ width: `${Math.min((episode.ContinueFrom / episode.DurationTicks) * 100, 100)}%` }}
+                                      />
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                               <div className="flex-1 min-w-0">

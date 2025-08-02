@@ -132,6 +132,16 @@ const WatchPageClient: React.FC<WatchPageClientProps> = ({ itemId, serverUrl }) 
     getAuth()
   }, [])
 
+  const handleSubtitleChange = (stream: MediaStream | null) => {
+    // Add logic to change the subtitle track in the video player
+    console.log('Subtitle changed:', stream);
+  };
+  
+  const handleAudioChange = (stream: MediaStream) => {
+    // Add logic to change the audio track in the video player
+    console.log('Audio changed:', stream);
+  };
+
   // Fetch continue watching position
   const fetchContinueWatchingPosition = async (): Promise<number> => {
     try {
@@ -466,6 +476,12 @@ const WatchPageClient: React.FC<WatchPageClientProps> = ({ itemId, serverUrl }) 
           poster={posterUrl}
           maxDuration={maxDuration} // Pass max duration to prevent weird behavior
           startTime={startTime} // Start from continue watching position
+          itemId={itemId} // For thumbnail generation
+          serverUrl={serverUrl} // Server URL for thumbnails
+          apiKey={credentials?.token} // API key for thumbnails
+          mediaStreams={playbackInfo?.MediaSources[0].MediaStreams} // Pass available streams
+          onSubtitleChange={handleSubtitleChange}
+          onAudioChange={handleAudioChange}
         />
       </div>
     );
